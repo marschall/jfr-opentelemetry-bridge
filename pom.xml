@@ -5,7 +5,7 @@
   <version>1.0.0-SNAPSHOT</version>
   <inceptionYear>2026</inceptionYear>
   <name>JFR Opentelemetry Bridge</name>
-  <description>Formats jstack to folded FlameGraph format</description>
+  <description>Sends JFR Events to an Opentelemetry Logger</description>
 
   <developers>
     <developer>
@@ -29,8 +29,8 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:git@github.com:marschall/finalize-analizer.git</connection>
-    <developerConnection>scm:git:git@github.com:marschall/finalize-analizer.git</developerConnection>
+    <connection>scm:git:git@github.com:marschall/jfr-opentelemetry-bridge.git</connection>
+    <developerConnection>scm:git:git@github.com:marschall/jfr-opentelemetry-bridge.git</developerConnection>
     <url>${project.url}</url>
     <tag>HEAD</tag>
   </scm>
@@ -265,9 +265,9 @@
 
   <properties>
     <maven.compiler.release>25</maven.compiler.release>
-    <maven.compiler.parameters>true</maven.compiler.parameters>
     <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
     <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
+    <project.build.outputTimestamp>2025-11-23T16:02:26Z</project.build.outputTimestamp>
   </properties>
 
 </project>

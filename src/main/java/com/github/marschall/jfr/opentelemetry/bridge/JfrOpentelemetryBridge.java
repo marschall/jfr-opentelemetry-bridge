@@ -27,6 +27,9 @@ import com.github.marschall.jfr.opentelemetry.bridge.JfrOpentelemetryBridge.Valu
 
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
+import jdk.jfr.DataAmount;
+import jdk.jfr.Timespan;
+import jdk.jfr.Frequency;
 import jdk.jfr.EventType;
 import jdk.jfr.ValueDescriptor;
 import jdk.jfr.consumer.EventStream;
@@ -72,7 +75,6 @@ public final class JfrOpentelemetryBridge implements Consumer<RecordedEvent> {
   @Override
   public void accept(RecordedEvent jfrEvent) {
     // missing:
-    // - thread
     // - exception and stack trace
     // - category and label
     // missing otel
@@ -135,6 +137,10 @@ public final class JfrOpentelemetryBridge implements Consumer<RecordedEvent> {
   private static ValueExporter createExporter(ValueDescriptor descriptor, String prefix, Set<Long> seen) {
     String jfrFieldName = descriptor.getName();
     String otelFieldName = prefix == null ? jfrFieldName : prefix + '.' + jfrFieldName;
+    String unitSuffix = getUnitSuffix(descriptor);
+    if (unitSuffix != null) {
+      otelFieldName = otelFieldName + unitSuffix;
+    }
     String typeName = descriptor.getTypeName();
     return switch (typeName) {
       case "boolean" -> new BooleanValueExporter(otelFieldName, jfrFieldName);
@@ -162,6 +168,37 @@ public final class JfrOpentelemetryBridge implements Consumer<RecordedEvent> {
         }
       }
     };
+  }
+
+  private static String getUnitSuffix(ValueDescriptor descriptor) {
+    // https://opentelemetry.io/docs/specs/semconv/general/metrics/
+    // https://ucum.org/ucum
+    DataAmount dataAmount = descriptor.getAnnotation(DataAmount.class);
+    if (dataAmount != null) {
+      return switch (dataAmount.value()) {
+        case DataAmount.BITS -> "_bit";
+        // https://github.com/open-telemetry/opentelemetry-specification/issues/2973
+        case DataAmount.BYTES -> "_By";
+        default -> null;
+      };
+    }
+    Timespan timespan = descriptor.getAnnotation(Timespan.class);
+    if (timespan != null) {
+      return switch (timespan.value()) {
+        case Timespan.NANOSECONDS -> "_ns";
+        case Timespan.MICROSECONDS -> "_us";
+        case Timespan.MILLISECONDS -> "_ms";
+        case Timespan.SECONDS -> "_s";
+        case Timespan.TICKS -> null;
+        default -> null;
+      };
+    }
+    Frequency frequency = descriptor.getAnnotation(Frequency.class);
+    if (frequency != null) {
+      return "_Hz";
+    }
+    // TODO timestamp
+    return null;
   }
 
   static final class EventExporter {
